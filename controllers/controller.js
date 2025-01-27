@@ -1,5 +1,5 @@
 const fs = require("fs")
-const { sellMint } = require("../bot/sell")
+const { sellMint, fetchTxDetail } = require("../bot/sell")
 
 const getSnipingAccount = async (req, res) => {
     try {
@@ -37,6 +37,44 @@ const getTradeHis = async (req, res) => {
     }
 }
 
+const manualUpdateSellHis = async (req, res) => {
+    const { mint, hash } = req.body
+    let existingBoughtList = fs.readFileSync("./tx/boughtList.json", "utf-8")
+    existingBoughtList = JSON.parse(existingBoughtList)
+    const buyIndex = existingBoughtList.map(e => e.mint).indexOf(mint)
+
+    const result = await fetchTxDetail(mint, hash)
+    if (buyIndex >= 0) {
+        existingBoughtList[buyIndex].sell = {
+            Sol: result.wSolChange, Mint: result.mintChange
+        }
+        existingBoughtList[buyIndex].signatures.push({
+            txType: "Sell",
+            signature: hash,
+            blockTime: result.tradeBlockTime,
+            slot: result.tradeSlot
+        })
+        existingBoughtList[buyIndex].status = "sold"
+    } else {
+        existingBoughtList.push({
+            sell: {
+                Sol: result.wSolChange, Mint: result.mintChange
+            },
+            signatures: [
+                {
+                    txType: "Sell",
+                    signature: hash,
+                    blockTime: result.tradeBlockTime,
+                    slot: result.tradeSlot
+                }
+            ],
+            status: "sold"
+        })
+    }
+    fs.writeFileSync("./tx/boughtList.json", JSON.stringify(existingBoughtList))
+    return res.status(200).send({ msg: "Updated Sell History" })
+}
+
 const sell = async (req, res) => {
     try {
         const mint = req.body.mint
@@ -51,5 +89,6 @@ module.exports = {
     getSnipingAccount,
     getBoughtList,
     sell,
-    getTradeHis
+    getTradeHis,
+    manualUpdateSellHis
 }

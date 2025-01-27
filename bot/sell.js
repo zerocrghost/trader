@@ -26,7 +26,7 @@ exports.sellMint = async (mint) => {
     const hash = await sell(connection, accounts, getKeyPair(privKey), mintAmount.amount, minOutPut)
     console.log("Res: ", hash)
 
-    const res = await fetchTxDetail(mint, hash)
+    const res = await this.fetchTxDetail(mint, hash)
     if (buyIndex >= 0) {
         existingBoughtList[buyIndex].sell = {
             Sol: res.wSolChange, Mint: res.mintChange
@@ -58,7 +58,7 @@ exports.sellMint = async (mint) => {
     return hash
 }
 
-const fetchTxDetail = async (mint, hash) => {
+exports.fetchTxDetail = async (mint, hash) => {
     console.log("Fetch tx detail for: ", mint, hash)
     return new Promise((resolve, reject) => {
         try {
