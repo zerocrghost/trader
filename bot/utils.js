@@ -451,60 +451,66 @@ exports.getSignatureStatus = async (signature) => {
 }
 
 exports.buy = async (connection, accounts, wallet, amountInLamports, amountOutLamports) => {
-    console.log(`Buying ${amountOutLamports / (10 ** accounts.decimals)} ${accounts.mint} with ${amountInLamports / 1000000000} Sol`)
-    const startAt = new Date()
-    const provider = new AnchorProvider(
-        connection,
-        new CustomWallet(wallet),
-        AnchorProvider.defaultOptions()
-    );
+    try {
+        console.log(`Buying ${amountOutLamports / (10 ** accounts.decimals)} ${accounts.mint} with ${amountInLamports / 1000000000} Sol`)
+        const startAt = new Date()
+        const provider = new AnchorProvider(
+            connection,
+            new CustomWallet(wallet),
+            AnchorProvider.defaultOptions()
+        );
 
-    const ammProgram = raydiumAmmProgram({
-        provider: provider,
-    });
+        const ammProgram = raydiumAmmProgram({
+            provider: provider,
+        });
 
-    // Set swapping tokens. according to this set, it determines the buy and sell option
-    const coinMint = new web3.PublicKey(solMintAddress);
-    const pcMint = new web3.PublicKey(accounts.mint);
-    const userSourceTokenAccount = splToken.getAssociatedTokenAddressSync(coinMint, wallet.publicKey);
-    const userDestinationTokenAccount = splToken.getAssociatedTokenAddressSync(pcMint, wallet.publicKey);
+        // Set swapping tokens. according to this set, it determines the buy and sell option
+        const coinMint = new web3.PublicKey(solMintAddress);
+        const pcMint = new web3.PublicKey(accounts.mint);
+        const userSourceTokenAccount = splToken.getAssociatedTokenAddressSync(coinMint, wallet.publicKey);
+        const userDestinationTokenAccount = splToken.getAssociatedTokenAddressSync(pcMint, wallet.publicKey);
 
-    // Create Instruction
-    const instruction = await ammProgram.methods
-        .swapBaseIn(new BN(amountInLamports), new BN(amountOutLamports))
-        .accounts({
-            tokenProgram: splToken.TOKEN_PROGRAM_ID,
-            amm: new web3.PublicKey(accounts.amm),
-            ammAuthority: new web3.PublicKey(raydiumAuthorityV4),
-            ammOpenOrders: new web3.PublicKey(accounts.ammOpenOrders),
-            ammTargetOrders: new web3.PublicKey(accounts.poolWithdrawQueue),
-            poolCoinTokenAccount: new web3.PublicKey(accounts.poolCoinAccount),
-            poolPcTokenAccount: new web3.PublicKey(accounts.poolPCAccount),
-            serumProgram: new web3.PublicKey(openBook),
-            serumMarket: new web3.PublicKey(accounts.serumMarket),
-            serumBids: new web3.PublicKey(accounts.serumBids),
-            serumAsks: new web3.PublicKey(accounts.serumAsks),
-            serumEventQueue: new web3.PublicKey(accounts.serumEventQueue),
-            serumCoinVaultAccount: new web3.PublicKey(accounts.serumCoinVault),
-            serumPcVaultAccount: new web3.PublicKey(accounts.serumPCVault),
-            serumVaultSigner: new web3.PublicKey(accounts.serumVaultSinger),
-            uerSourceTokenAccount: userSourceTokenAccount,
-            uerDestinationTokenAccount: userDestinationTokenAccount,
-            userSourceOwner: wallet.publicKey,
-        })
-        .instruction();
-    console.log("Create Instruction: ", (new Date() - startAt) / 1000)
-    const transaction = new web3.Transaction({ recentBlockhash: accounts.blockHash });
-    const computePriceIx = web3.ComputeBudgetProgram.setComputeUnitPrice({ microLamports: 10000000 });
-    transaction.add(instruction);
-    transaction.add(computePriceIx);
-    const txId = await web3.sendAndConfirmTransaction(connection, transaction, [wallet], {
-        commitment: "confirmed",
-        skipPreflight: false,
-        preflightCommitment: "confirmed",
-    });
-    console.log("Finish tx: ", (new Date() - startAt) / 1000)
-    return txId
+        // Create Instruction
+        const instruction = await ammProgram.methods
+            .swapBaseIn(new BN(amountInLamports), new BN(amountOutLamports))
+            .accounts({
+                tokenProgram: splToken.TOKEN_PROGRAM_ID,
+                amm: new web3.PublicKey(accounts.amm),
+                ammAuthority: new web3.PublicKey(raydiumAuthorityV4),
+                ammOpenOrders: new web3.PublicKey(accounts.ammOpenOrders),
+                ammTargetOrders: new web3.PublicKey(accounts.poolWithdrawQueue),
+                poolCoinTokenAccount: new web3.PublicKey(accounts.poolCoinAccount),
+                poolPcTokenAccount: new web3.PublicKey(accounts.poolPCAccount),
+                serumProgram: new web3.PublicKey(openBook),
+                serumMarket: new web3.PublicKey(accounts.serumMarket),
+                serumBids: new web3.PublicKey(accounts.serumBids),
+                serumAsks: new web3.PublicKey(accounts.serumAsks),
+                serumEventQueue: new web3.PublicKey(accounts.serumEventQueue),
+                serumCoinVaultAccount: new web3.PublicKey(accounts.serumCoinVault),
+                serumPcVaultAccount: new web3.PublicKey(accounts.serumPCVault),
+                serumVaultSigner: new web3.PublicKey(accounts.serumVaultSinger),
+                uerSourceTokenAccount: userSourceTokenAccount,
+                uerDestinationTokenAccount: userDestinationTokenAccount,
+                userSourceOwner: wallet.publicKey,
+            })
+            .instruction();
+        console.log("Create Instruction: ", (new Date() - startAt) / 1000)
+        const transaction = new web3.Transaction({ recentBlockhash: accounts.blockHash });
+        const computePriceIx = web3.ComputeBudgetProgram.setComputeUnitPrice({ microLamports: 10000000 });
+        transaction.add(instruction);
+        transaction.add(computePriceIx);
+        const txId = await web3.sendAndConfirmTransaction(connection, transaction, [wallet], {
+            commitment: "confirmed",
+            skipPreflight: false,
+            preflightCommitment: "confirmed",
+        });
+        console.log("Finish tx: ", (new Date() - startAt) / 1000)
+        return txId
+    } catch (err) {
+        const errMsg = err.getLogs()
+        if (errMsg.indexOf("exceeds desired slippage Limit")) return ("slippage")
+        else return errMsg
+    }
 }
 
 exports.sell = async (connection, accounts, wallet, amountInLamports, amountOutLamports) => {
@@ -579,7 +585,6 @@ exports.createTokenAccount = async (connection, wallet, mint) => {
             new web3.PublicKey(mint),
             wallet.publicKey
         );
-        console.log("creating token account")
         const accountInfo = await connection.getAccountInfo(associatedTokenAddress);
         if (!!accountInfo) {
             console.log("Token account already exists")
@@ -593,11 +598,9 @@ exports.createTokenAccount = async (connection, wallet, mint) => {
             wallet.publicKey, // Owner of the token account
             new web3.PublicKey(mint) // Mint of the token to create the account for
         );
-        console.log("Associated Account Instruction")
 
         // create tx
         const latestBlock = await this.getLatestBlock()
-        console.log("Get Latest: ", latestBlock)
         const blockhash = latestBlock.blockHash;
         const transaction = new web3.Transaction({ recentBlockhash: blockhash });
         const computePriceIx = web3.ComputeBudgetProgram.setComputeUnitPrice({ microLamports: 500000 });
@@ -609,7 +612,6 @@ exports.createTokenAccount = async (connection, wallet, mint) => {
                 skipPreflight: false,
                 preflightCommitment: "confirmed",
             });
-            console.log("TX Sent")
             return txId
         } catch (err) {
             console.log("Web3 error")

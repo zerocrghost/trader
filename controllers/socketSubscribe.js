@@ -94,13 +94,11 @@ const handleTxs = async (txs, blockTime, slot) => {
                     console.log("Remove liquidity from Pump Fun, starting to get accounts information")
                     accounts = {}
                     const txInfo = processWithdrawTx(tx)
-                    console.log("TXINFO : ", txInfo)
                     // Save mint address
                     accounts.mint = txInfo.accounts.mint
 
                     // Get token information and decide to buy or not
                     const tokenInfo = await getTokenCreatorInfo(accounts.mint)
-                    console.log("TokenInfo fetched")
                     if (!tokenInfo) return
                     Object.keys(tokenInfo).forEach(key => {
                         accounts[key] = tokenInfo[key]
@@ -110,7 +108,6 @@ const handleTxs = async (txs, blockTime, slot) => {
                     else accounts.toBuy = true
                     // console.log("Accounts at withdraw: ", accounts)
                     saveWithdrawTx(accounts, txInfo.signature, txInfo.txType, blockTime, slot)
-                    console.log("Save withdraw tx")
                     try {
                         // If toBuy token, then create token account
                         if (true) {
@@ -133,7 +130,7 @@ const handleTxs = async (txs, blockTime, slot) => {
                         if (true) {
                             // if (totalAccounts.toBuy) {
                             // Try buy
-                            await tryBuy(totalAccounts, 0)
+                            const res = await tryBuy(totalAccounts, 0)
                         }
 
                     }
@@ -158,6 +155,8 @@ const tryBuy = async (accounts, round) => {
                     saveBoughtTx(res, accounts.signatures, accounts.mint)
                     return resolve(true)
                 } catch (err) {
+                    if (err === "slippage") console.log("Slippage error")
+                    else console.log(err)
                     round++
                     console.log("Buy Error: ", err)
                     if (round >= buyAttempNum) resolve(false)
