@@ -507,8 +507,8 @@ exports.buy = async (connection, accounts, wallet, amountInLamports, amountOutLa
         console.log("Finish tx: ", (new Date() - startAt) / 1000)
         return txId
     } catch (err) {
-        const errMsg = err.getLogs()
-        if (errMsg.indexOf("exceeds desired slippage Limit")) return ("slippage")
+        const errMsg = err.getLogs().toString()
+        if (errMsg.indexOf("exceeds desired slippage Limit") >= 0) return ("slippage")
         else return errMsg
     }
 }
@@ -590,7 +590,6 @@ exports.createTokenAccount = async (connection, wallet, mint) => {
             console.log("Token account already exists")
             return
         }
-        console.log("Getting account info")
 
         const associatedAccountInstruction = splToken.createAssociatedTokenAccountInstruction(
             wallet.publicKey, // Payer of the transaction
