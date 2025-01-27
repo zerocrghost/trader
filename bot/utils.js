@@ -494,7 +494,6 @@ exports.buy = async (connection, accounts, wallet, amountInLamports, amountOutLa
                 userSourceOwner: wallet.publicKey,
             })
             .instruction();
-        console.log("Create Instruction: ", (new Date() - startAt) / 1000)
         const transaction = new web3.Transaction({ recentBlockhash: accounts.blockHash });
         const computePriceIx = web3.ComputeBudgetProgram.setComputeUnitPrice({ microLamports: 10000000 });
         transaction.add(instruction);
@@ -504,7 +503,7 @@ exports.buy = async (connection, accounts, wallet, amountInLamports, amountOutLa
             skipPreflight: false,
             preflightCommitment: "confirmed",
         });
-        console.log("Finish tx: ", (new Date() - startAt) / 1000)
+        console.log("Finish Bought: ", accounts.mint, (new Date() - startAt) / 1000)
         return txId
     } catch (err) {
         const errMsg = err.getLogs().toString()
@@ -554,8 +553,6 @@ exports.sell = async (connection, accounts, wallet, amountInLamports, amountOutL
         })
         .instruction();
 
-    console.log("Instruction finished: ", (new Date() - startAt) / 1000)
-
     // Set priorityfee
     const computePriceIx = web3.ComputeBudgetProgram.setComputeUnitPrice({ microLamports: 10000000 });
 
@@ -575,7 +572,7 @@ exports.sell = async (connection, accounts, wallet, amountInLamports, amountOutL
         },
         "confirmed"
     );
-    console.log("TX Confirmed: ", (new Date() - startAt) / 1000)
+    console.log("Sell Finished: ", accounts.mint)
     return txId
 }
 

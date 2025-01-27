@@ -17,7 +17,7 @@ const fetch = async () => {
     for (let i = 0; i < existingList.length; i++) {
         if (!existingList[i].status) {
             // Fetch tx information
-            console.log("Fetching for tx: ", existingList[i].txHash)
+            // console.log("Fetching for tx: ", existingList[i].txHash)
             const res = await getTxDetail(existingList[i].txHash)
             if (!res) return
 
