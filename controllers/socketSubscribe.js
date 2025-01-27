@@ -91,7 +91,7 @@ const handleTxs = async (txs, blockTime, slot) => {
                 const logStr = tx?.meta?.logMessages.toString()
                 if (logStr.indexOf("Program log: Instruction: Withdraw") >= 0) {
                     // Remove liquidity from Pump Fun
-                    console.log("Remove liquidity from Pump Fun, starting to get accounts information")
+                    console.log("\nRemove liquidity from Pump Fun, starting to get accounts information")
                     accounts = {}
                     const txInfo = processWithdrawTx(tx)
                     if (!txInfo) return
@@ -155,14 +155,16 @@ const tryBuy = async (accounts, round) => {
                 try {
                     const amountOutInLamports = amountOutExpect * 10 ** accounts.decimals
                     const res = await buy(connection, accounts, getKeyPair(privKey), amountBuy, amountOutInLamports)
-                    saveBoughtTx(res, accounts.signatures, accounts.mint)
-                    return resolve(true)
+                    if (!!res) {
+                        saveBoughtTx(res, accounts.signatures, accounts.mint);
+                        return resolve(true)
+                    }
+                    else return resolve(await tryBuy(accounts, round))
+
                 } catch (err) {
-                    console.log("Err msg: ", err)
                     if (err.message === "slippage") console.log("Slippage error")
                     else console.log(err)
                     round++
-                    console.log("Buy Error: ", err)
                     if (round >= buyAttempNum) resolve(false)
                     else return resolve(await tryBuy(accounts, round))
                 }

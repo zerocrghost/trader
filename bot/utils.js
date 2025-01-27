@@ -511,8 +511,14 @@ exports.buy = async (connection, accounts, wallet, amountInLamports, amountOutLa
     } catch (err) {
         const errors = await err.getLogs()
         const errMsg = errors.toString()
-        if (errMsg.indexOf("exceeds desired slippage Limit") >= 0) throw Error("slippage")
-        else throw Error(errMsg)
+        if (errMsg.indexOf("slippage limit") >= 0) {
+            console.log("Slippage")
+            return false
+        }
+        else {
+            console.log("Errmsg: ", errMsg)
+            return false
+        }
     }
 }
 
