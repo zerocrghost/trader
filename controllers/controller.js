@@ -1,5 +1,7 @@
 const fs = require("fs")
 const { sellMint, fetchTxDetail } = require("../bot/sell")
+const { connection, privKey } = require("../bot/constants")
+const { createTokenAccount } = require("../bot/utils")
 
 const getSnipingAccount = async (req, res) => {
     try {
@@ -88,10 +90,21 @@ const sell = async (req, res) => {
     }
 }
 
+const createAccount = async (req, res) => {
+    try {
+        const mint = req.body.mint
+        const res = await createTokenAccount(connection, getKeyPair(privKey), mint)
+        res.status(200).send({ msg: res })
+    } catch (err) {
+        return res.status(501).send({ msg: "Error creating token account" })
+    }
+}
+
 module.exports = {
     getSnipingAccount,
     getBoughtList,
     sell,
     getTradeHis,
-    manualUpdateSellHis
+    manualUpdateSellHis,
+    createAccount
 }

@@ -603,13 +603,18 @@ exports.createTokenAccount = async (connection, wallet, mint) => {
         const computePriceIx = web3.ComputeBudgetProgram.setComputeUnitPrice({ microLamports: 500000 });
         transaction.add(associatedAccountInstruction);
         transaction.add(computePriceIx);
-        const txId = await web3.sendAndConfirmTransaction(connection, transaction, [wallet], {
-            commitment: "confirmed",
-            skipPreflight: false,
-            preflightCommitment: "confirmed",
-        });
-        console.log("TX Sent")
-        return txId
+        try {
+            const txId = await web3.sendAndConfirmTransaction(connection, transaction, [wallet], {
+                commitment: "confirmed",
+                skipPreflight: false,
+                preflightCommitment: "confirmed",
+            });
+            console.log("TX Sent")
+            return txId
+        } catch (err) {
+            console.log("Web3 error")
+            throw (err)
+        }
     } catch (err) {
         console.log("TOken account creation failed")
         throw (err)
