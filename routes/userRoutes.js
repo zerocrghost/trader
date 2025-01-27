@@ -1,6 +1,6 @@
 const express = require("express");
 const { startSubscribe, stopSubscribe, getSubscribeStatus } = require("../controllers/socketSubscribe");
-const { getBoughtList, sell, getTradeHis, getSnipingAccount, manualUpdateSellHis, createAccount } = require("../controllers/controller");
+const { getBoughtList, sell, getTradeHis, getSnipingAccount, manualUpdateSellHis, createAccount, manualUpdateBoughtHis } = require("../controllers/controller");
 const router = express.Router();
 
 router.post("/getSnipingAccount", getSnipingAccount);
@@ -12,5 +12,6 @@ router.get("/statusSubscribe", getSubscribeStatus)
 router.post("/sell", sell)
 router.post("/updateSell", manualUpdateSellHis)
 router.post("/createTokenAccount", createAccount)
+router.post("/updateBuy", manualUpdateBoughtHis)
 
 module.exports = router;

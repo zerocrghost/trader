@@ -40,44 +40,76 @@ const getTradeHis = async (req, res) => {
 }
 
 const manualUpdateSellHis = async (req, res) => {
-    const { mint, hash } = req.body
-    let existingBoughtList = fs.readFileSync("./tx/boughtList.json", "utf-8")
-    existingBoughtList = JSON.parse(existingBoughtList)
-    const buyIndex = existingBoughtList.map(e => e.mint).indexOf(mint)
+    try {
+        const { mint, hash } = req.body
+        let existingBoughtList = fs.readFileSync("./tx/boughtList.json", "utf-8")
+        existingBoughtList = JSON.parse(existingBoughtList)
+        const buyIndex = existingBoughtList.map(e => e.mint).indexOf(mint)
 
-    if (existingBoughtList[buyIndex].status === "sold") {
-        return res.status(200).send({ msg: "already listed in sell history" })
-    }
-    const result = await fetchTxDetail(mint, hash)
-    if (buyIndex >= 0) {
-        existingBoughtList[buyIndex].sell = {
-            Sol: result.wSolChange, Mint: result.mintChange
+        if (existingBoughtList[buyIndex].status === "sold") {
+            return res.status(200).send({ msg: "already listed in sell history" })
         }
-        existingBoughtList[buyIndex].signatures.push({
-            txType: "Sell",
-            signature: hash,
-            blockTime: result.tradeBlockTime,
-            slot: result.tradeSlot
-        })
-        existingBoughtList[buyIndex].status = "sold"
-    } else {
-        existingBoughtList.push({
-            sell: {
+        const result = await fetchTxDetail(mint, hash)
+        if (buyIndex >= 0) {
+            existingBoughtList[buyIndex].sell = {
                 Sol: result.wSolChange, Mint: result.mintChange
-            },
-            signatures: [
-                {
-                    txType: "Sell",
-                    signature: hash,
-                    blockTime: result.tradeBlockTime,
-                    slot: result.tradeSlot
-                }
-            ],
-            status: "sold"
-        })
+            }
+            existingBoughtList[buyIndex].signatures.push({
+                txType: "Sell",
+                signature: hash,
+                blockTime: result.tradeBlockTime,
+                slot: result.tradeSlot
+            })
+            existingBoughtList[buyIndex].status = "sold"
+        } else {
+            existingBoughtList.push({
+                sell: {
+                    Sol: result.wSolChange, Mint: result.mintChange
+                },
+                signatures: [
+                    {
+                        txType: "Sell",
+                        signature: hash,
+                        blockTime: result.tradeBlockTime,
+                        slot: result.tradeSlot
+                    }
+                ],
+                status: "sold"
+            })
+        }
+        fs.writeFileSync("./tx/boughtList.json", JSON.stringify(existingBoughtList))
+        return res.status(200).send({ msg: "Updated Sell History" })
+    } catch (err) {
+        res.status(501).send({ msg: "Update sell history failed" })
     }
-    fs.writeFileSync("./tx/boughtList.json", JSON.stringify(existingBoughtList))
-    return res.status(200).send({ msg: "Updated Sell History" })
+}
+
+const manualUpdateBoughtHis = async (req, res) => {
+    try {
+        const { mint, hash } = req.body
+
+        let existingList = fs.readFileSync("./tx/snipingList.json", "utf-8")
+        existingList = JSON.parse(existingList)
+        const index = existingList.map(e => e.mint).indexOf(mint)
+        if (index < 0) {
+            return res.status(404).send({ msg: "No Matched Mint" })
+
+        }
+        const accounts = existingList[index]
+        let existingBoughtList = fs.readFileSync("./tx/boughtList.json", "utf-8")
+        existingBoughtList = JSON.parse(existingBoughtList)
+        const buyIndex = existingBoughtList.map(e => e.txHash).indexOf(hash)
+        if (buyIndex < 0) {
+            existingBoughtList.push({ txHash: hash, signatures: accounts.signatures, mint })
+            fs.writeFileSync("./tx/boughtList.json", JSON.stringify(existingBoughtList))
+        } else {
+            console.log("Alrd saved")
+            return
+        }
+        return res.status(200).send({ msg: "Updated Sell History" })
+    } catch (err) {
+        res.status(501).send({ msg: "Update Buy his failed" })
+    }
 }
 
 const sell = async (req, res) => {
@@ -107,5 +139,6 @@ module.exports = {
     sell,
     getTradeHis,
     manualUpdateSellHis,
-    createAccount
+    createAccount,
+    manualUpdateBoughtHis
 }
