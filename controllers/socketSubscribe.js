@@ -7,6 +7,7 @@ const attemptNum = 100
 const buyAttempNum = 10
 // Accounts info gathered by several txs
 let client
+let lastAsked = new Date()
 let accounts = {}
 
 const startSubscribe = async (req, res) => {
@@ -42,31 +43,34 @@ const startWebsocket = () => {
     }
 
     client.onmessage = (e) => {
-        try {
-            if (typeof e.data === 'string') {
-                // console.log("Event: ", e.data)
-                // Catch blockNotification
-                const data = JSON.parse(e.data)
-                const method = data.method
-                if (method !== 'blockNotification') {
-                    console.log("No Block Notification")
-                    return;
-                }
+        // if lastAsked is bigger than 20 Sec, close client
+        if (new Date() - lastAsked < 20000)
+            try {
+                if (typeof e.data === 'string') {
+                    // console.log("Event: ", e.data)
+                    // Catch blockNotification
+                    const data = JSON.parse(e.data)
+                    const method = data.method
+                    if (method !== 'blockNotification') {
+                        console.log("No Block Notification")
+                        return;
+                    }
 
-                // Get Transaction information
-                const txs = data?.params?.result?.value?.block?.transactions
-                const slot = data.params.result?.value?.block?.parentSlot
-                const blockTime = data.params.result?.value?.block?.blockTime
-                if (txs.length >= 0) {
-                    handleTxs(txs, blockTime, slot)
-                } else {
-                    console.log("Empty TXs")
+                    // Get Transaction information
+                    const txs = data?.params?.result?.value?.block?.transactions
+                    const slot = data.params.result?.value?.block?.parentSlot
+                    const blockTime = data.params.result?.value?.block?.blockTime
+                    if (txs.length >= 0) {
+                        handleTxs(txs, blockTime, slot)
+                    } else {
+                        console.log("Empty TXs")
+                    }
+                    // console.log("Received: ", e.data)
                 }
-                // console.log("Received: ", e.data)
+            } catch (err) {
+                throw (err)
             }
-        } catch (err) {
-            throw (err)
-        }
+        else console.log("Waiting for reconnecting from end user")
     }
 }
 
@@ -77,6 +81,7 @@ const stopSubscribe = async (req, res) => {
 }
 
 const getSubscribeStatus = async (req, res) => {
+    lastAsked = new Date()
     if (!client) return res.status(200).send({ msg: "Not started Socket yet" })
     else return res.status(200).send({ msg: client.readyState })
 }

@@ -1,5 +1,6 @@
 const fs = require("fs")
 const { sellMint } = require("../bot/sell")
+
 const getBoughtList = async (req, res) => {
     try {
         let existingBoughtList = fs.readFileSync("./tx/boughtList.json", "utf-8")
