@@ -86,6 +86,7 @@ const ignoreMint = async (req, res) => {
         }
         existingBoughtList[buyIndex].status = "ignore"
         fs.writeFileSync("./tx/boughtList.json", JSON.stringify(existingBoughtList))
+        return res.status(200).send({ msg: "Success" })
     } catch (err) {
         res.status(501).send("server error")
     }
