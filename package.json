@@ -4,7 +4,6 @@
     "@metaplex-foundation/js": "^0.20.1",
     "@native-to-anchor/buffer-layout": "^0.1.0",
     "@raydium-io/raydium-sdk-v2": "^0.1.106-alpha",
-    "@solana/buffer-layout": "4.0.1",
     "@solana/buffer-layout-utils": "^0.2.0",
     "@solana/spl-token": "0.4.8",
     "@solana/web3.js": "^1.98.0",
@@ -15,5 +14,8 @@
     "express": "^4.21.2",
     "solana": "^3.0.0",
     "websocket": "^1.0.35"
+  },
+  "resolutions": {
+    "@solana/buffer-layout": "4.0.1"
   }
 }
