@@ -40,6 +40,10 @@ exports.processWithdrawTx = (data) => {
     if (accountKeys[0] !== pumpFunMigrator) return false
     if (accountKeys.length > 10) {
         const mint = accountKeys[10]
+        if (mint === "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA") {
+            console.log("Withdraw account keys: ", accountKeys)
+            return false
+        }
         return { txType: "Withdraw", signature, accounts: { mint } }
     } else {
         console.log(`Error: Withdraw Not enough account keys (found ${accountKeys.length})`)

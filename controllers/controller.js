@@ -16,6 +16,27 @@ const getSnipingAccount = async (req, res) => {
         res.status(501).send("server error")
     }
 }
+
+const getSnipingList = async (req, res) => {
+    try {
+        let existingBoughtList = fs.readFileSync("./tx/snipingList.json", "utf-8")
+        existingBoughtList = JSON.parse(existingBoughtList)
+        return res.status(200).send({ data: existingBoughtList })
+    } catch (err) {
+        res.status(501).send("server error")
+    }
+}
+
+const getAllTradeHis = async (req, res) => {
+    try {
+        let existingBoughtList = fs.readFileSync("./tx/boughtList.json", "utf-8")
+        existingBoughtList = JSON.parse(existingBoughtList)
+        return res.status(200).send({ data: existingBoughtList })
+    } catch (err) {
+        res.status(501).send("server error")
+    }
+}
+
 const getBoughtList = async (req, res) => {
     try {
         let existingBoughtList = fs.readFileSync("./tx/boughtList.json", "utf-8")
@@ -140,5 +161,7 @@ module.exports = {
     getTradeHis,
     manualUpdateSellHis,
     createAccount,
-    manualUpdateBoughtHis
+    manualUpdateBoughtHis,
+    getSnipingList,
+    getAllTradeHis
 }

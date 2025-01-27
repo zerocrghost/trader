@@ -24,7 +24,8 @@ exports.sellMint = async (mint) => {
     // TODO: calculate minimum output
     const minOutPut = 0
     const hash = await sell(connection, accounts, getKeyPair(privKey), mintAmount.amount, minOutPut)
-    console.log("Res: ", hash)
+
+    console.log("Fetch tx detail for: ", mint, hash)
 
     const res = await this.fetchTxDetail(mint, hash)
     if (buyIndex >= 0) {
@@ -59,7 +60,6 @@ exports.sellMint = async (mint) => {
 }
 
 exports.fetchTxDetail = async (mint, hash) => {
-    console.log("Fetch tx detail for: ", mint, hash)
     return new Promise((resolve, reject) => {
         try {
             setTimeout(async () => {
