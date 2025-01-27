@@ -101,6 +101,7 @@ exports.getTokenHolders = async (address) => {
 
         return response.data[0]?.result.value
     } catch (err) {
+        console.log("Get Token holders failed")
         throw (err)
     }
 }
@@ -129,6 +130,7 @@ exports.getTxDetail = async (signature) => {
         const rawData = response?.data[0]?.result;
         return rawData
     } catch (err) {
+        console.log("TX Detail failed")
         throw (err)
     }
 }
@@ -193,6 +195,7 @@ exports.getTokenCreatorInfo = async (address) => {
 
         return { tokenLifeTime, devBought, devLeft, top10Holding, decimals }
     } catch (err) {
+        console.log("Get Token Creator Info failed")
         throw (err)
     }
 }
@@ -236,6 +239,7 @@ exports.getTokenAccountsByOwner = async (address, owner) => {
             return 0
         }
     } catch (err) {
+        console.log("Get Token Accounts By Owner failed")
         throw (err)
     }
 }

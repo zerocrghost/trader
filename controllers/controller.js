@@ -43,6 +43,9 @@ const manualUpdateSellHis = async (req, res) => {
     existingBoughtList = JSON.parse(existingBoughtList)
     const buyIndex = existingBoughtList.map(e => e.mint).indexOf(mint)
 
+    if (existingBoughtList[buyIndex].status === "sold") {
+        return res.status(200).send({ msg: "already listed in sell history" })
+    }
     const result = await fetchTxDetail(mint, hash)
     if (buyIndex >= 0) {
         existingBoughtList[buyIndex].sell = {
