@@ -158,7 +158,7 @@ const tryBuy = async (accounts, round) => {
                     saveBoughtTx(res, accounts.signatures, accounts.mint)
                     return resolve(true)
                 } catch (err) {
-                    if (err === "slippage") console.log("Slippage error")
+                    if (err.message === "slippage") console.log("Slippage error")
                     else console.log(err)
                     round++
                     console.log("Buy Error: ", err)
