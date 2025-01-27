@@ -17,6 +17,6 @@ router.get("/getAllTradeHis", getAllTradeHis)
 router.get("/getSnipingList", getSnipingList)
 router.get("/getTotalCounts", getTotalCounts)
 router.post("/ignore", ignoreMint)
-router.get("/removeBoughtHis", removeBoughtHis)
+router.post("/removeBoughtHis", removeBoughtHis)
 
 module.exports = router;
