@@ -96,6 +96,7 @@ const createAccount = async (req, res) => {
         const res = await createTokenAccount(connection, getKeyPair(privKey), mint)
         res.status(200).send({ msg: res })
     } catch (err) {
+        console.log("Error: ", err)
         return res.status(501).send({ msg: "Error creating token account" })
     }
 }
