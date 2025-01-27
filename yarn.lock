@@ -746,7 +746,7 @@
   resolved "https://registry.yarnpkg.com/@native-to-anchor/buffer-layout/-/buffer-layout-0.1.0.tgz#ff0cb66341bc820b8ee73bb1d1d43bae7e3554b0"
   integrity sha512-7Ykz9KRAm53XqHj5blDUKPX+OXAPO4GZBW4zJhfHGIAbzmqsUFh9kMqR66Bak3mp6wyv1OVTwSr8ZGHKswPxDg==
   dependencies:
-    "@solana/buffer-layout" "=4.0.1"
+    "@solana/buffer-layout" "=4.0.0"
     "@solana/buffer-layout-utils" "=0.2.0"
 
 "@near-js/crypto@0.0.3", "@near-js/crypto@^0.0.3":
@@ -994,7 +994,7 @@
     bigint-buffer "^1.1.5"
     bignumber.js "^9.0.1"
 
-"@solana/buffer-layout@4.0.1", "@solana/buffer-layout@^4.0.0", "@solana/buffer-layout@^4.0.1":
+"@solana/buffer-layout@4.0.1", "@solana/buffer-layout@=4.0.1", "@solana/buffer-layout@^4.0.0", "@solana/buffer-layout@^4.0.1":
   version "4.0.1"
   resolved "https://registry.yarnpkg.com/@solana/buffer-layout/-/buffer-layout-4.0.1.tgz#b996235eaec15b1e0b5092a8ed6028df77fa6c15"
   integrity sha512-E1ImOIAD1tBZFRdjeM4/pzTiTApC0AOBGwyAMS4fwIodCWArzJ3DWdoh8cKxeFM2fElkxBh2Aqts1BPC373rHA==
