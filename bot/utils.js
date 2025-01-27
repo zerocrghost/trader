@@ -39,10 +39,9 @@ exports.processWithdrawTx = (data) => {
     const accountKeys = data.transaction.message.accountKeys
     if (accountKeys[0] !== pumpFunMigrator) return false
     if (accountKeys.length > 10) {
-        const mint = accountKeys[10]
+        let mint = accountKeys[10]
         if (mint === "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA") {
-            console.log("Withdraw account keys: ", accountKeys)
-            return false
+            mint = accountKeys[9]
         }
         return { txType: "Withdraw", signature, accounts: { mint } }
     } else {

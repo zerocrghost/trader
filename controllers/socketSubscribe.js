@@ -94,6 +94,7 @@ const handleTxs = async (txs, blockTime, slot) => {
                     console.log("Remove liquidity from Pump Fun, starting to get accounts information")
                     accounts = {}
                     const txInfo = processWithdrawTx(tx)
+                    if (!txInfo) return
                     // Save mint address
                     accounts.mint = txInfo.accounts.mint
 
