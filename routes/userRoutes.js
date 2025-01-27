@@ -3,7 +3,7 @@ const { startSubscribe, stopSubscribe, getSubscribeStatus } = require("../contro
 const { getBoughtList, sell, getTradeHis, getSnipingAccount } = require("../controllers/controller");
 const router = express.Router();
 
-router.get("/getSnipingAccount", getSnipingAccount);
+router.post("/getSnipingAccount", getSnipingAccount);
 router.get("/getBoughtList", getBoughtList);
 router.get("/getTradeList", getTradeHis);
 router.get("/startSubscribe", startSubscribe)
