@@ -165,6 +165,26 @@ const manualUpdateBoughtHis = async (req, res) => {
     }
 }
 
+const removeBoughtHis = async (req, res) => {
+    try {
+        const { hash } = req.body
+        let existingBoughtList = fs.readFileSync("./tx/boughtList.json", "utf-8")
+        existingBoughtList = JSON.parse(existingBoughtList)
+        const buyIndex = existingBoughtList.map(e => e.txHash).indexOf(hash)
+        if (buyIndex < 0) {
+            return res.status(404).send({ msg: "Buy History Not found" })
+        } else {
+            existingBoughtList.splice(buyIndex, 1)
+            fs.writeFileSync("./tx/boughtList.json", JSON.stringify(existingBoughtList))
+            return res.status(200).send({ msg: "Updated BUy History" })
+        }
+        return res.status(200).send({ msg: "Updated Sell History" })
+    } catch (err) {
+        res.status(501).send({ msg: "Update Buy his failed" })
+    }
+
+}
+
 const sell = async (req, res) => {
     try {
         const mint = req.body.mint
@@ -197,5 +217,6 @@ module.exports = {
     getSnipingList,
     getAllTradeHis,
     ignoreMint,
-    getTotalCounts
+    getTotalCounts,
+    removeBoughtHis
 }
