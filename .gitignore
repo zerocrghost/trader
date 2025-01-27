@@ -3,4 +3,5 @@ node_modules/
 package-lock.json
 bot/constants.js
 
-tx/
+tx/boughtList.json
+tx/snipingList.json
