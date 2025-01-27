@@ -104,8 +104,8 @@ const handleTxs = async (txs, blockTime, slot) => {
                     Object.keys(tokenInfo).forEach(key => {
                         accounts[key] = tokenInfo[key]
                     })
-                    // If token is not older than 10 mins, if dev holds token more than 10 M, if top ten holding exceed 50% do not buy
-                    if (tokenInfo.tokenLifeTime < 600000 || tokenInfo.top10Holding > 60) accounts.toBuy = false
+                    // If token is not older than 3 mins, if dev holds token more than 10 M, if top ten holding exceed 50% do not buy
+                    if (tokenInfo.tokenLifeTime < 180000 || tokenInfo.top10Holding > 60) accounts.toBuy = false
                     else accounts.toBuy = true
                     // console.log("Accounts at withdraw: ", accounts)
                     saveWithdrawTx(accounts, txInfo.signature, txInfo.txType, blockTime, slot)
