@@ -47,7 +47,6 @@ const startWebsocket = () => {
         if (new Date() - lastAsked < 20000)
             try {
                 if (typeof e.data === 'string') {
-                    // console.log("Event: ", e.data)
                     // Catch blockNotification
                     const data = JSON.parse(e.data)
                     const method = data.method
@@ -65,7 +64,6 @@ const startWebsocket = () => {
                     } else {
                         console.log("Empty TXs")
                     }
-                    // console.log("Received: ", e.data)
                 }
             } catch (err) {
                 throw (err)
@@ -116,20 +114,20 @@ const handleTxs = async (txs, blockTime, slot) => {
                         if (true) {
                             // if (tokenInfo.toBuy) {
                             const res = await createTokenAccount(connection, getKeyPair(privKey), txInfo.accounts.mint)
-                            console.log("Token Account created: ", res)
+                            console.log("Token Account created: ", txInfo.accounts.mint)
                         }
                     } catch (err) {
                         console.log("Token Account creation failed: ", err)
                         return
                     }
                     // Start checking blocks from now
-                    console.log("Starting New Fetch Process")
+                    console.log("Starting New Fetch Process for ", txInfo.accounts.mint)
                     const totalAccounts = await fetchingBlock(txInfo.accounts.mint, slot, 0)
                     if (!totalAccounts) {
                         console.log("Did not find matched InitializeInstruction2 transaction")
                     } else {
                         // Start buy from here
-                        console.log("Accounts Finished: ", totalAccounts)
+                        console.log("Accounts Finished")
                         if (true) {
                             // if (totalAccounts.toBuy) {
                             // Try buy
@@ -148,7 +146,7 @@ const handleTxs = async (txs, blockTime, slot) => {
 }
 
 const tryBuy = async (accounts, round) => {
-    console.log("Trying Attempt: ", round)
+    // console.log("Trying Attempt: ", round)
     return new Promise(async (resolve, reject) => {
         try {
             setTimeout(async () => {
@@ -171,11 +169,11 @@ const tryBuy = async (accounts, round) => {
 }
 
 const fetchingBlock = async (mint, slot, round) => {
-    console.log("Start Fetching Round: ", round)
+    // console.log("Start Fetching Round: ", round)
     return new Promise((resolve, reject) => {
         try {
             setTimeout(async () => {
-                console.log(`Fetching for Mint: ${mint}, Slot: ${slot}`)
+                // console.log(`Fetching for Mint: ${mint}, Slot: ${slot}`)
                 const slots = [slot + 120, slot + 121, slot + 122, slot + 123, slot + 124, slot + 125, slot + 126, slot + 127, slot + 128]
                 const promises = Promise.all(slots.map(b => getBlock(b)))
                 const blockData = await promises.then()
@@ -191,7 +189,7 @@ const fetchingBlock = async (mint, slot, round) => {
                         unfinishedBlocks++
                     }
                 }
-                console.log("Unfinished blocks: ", unfinishedBlocks)
+                // console.log("Unfinished blocks: ", unfinishedBlocks)
                 if (unfinishedBlocks === 0) {
                     return resolve(false)
                 }
@@ -226,12 +224,12 @@ const handleInitializeBlock = (txs, mint, blockTime, slot, blockHash) => {
             const jitotipBalChange = tx?.meta?.postBalances[1] - tx?.meta?.preBalances[1]
             const signerBalChange = tx?.meta?.preBalances[0] - tx?.meta?.postBalances[0]
             if (jitotipBalChange === 100000000 && signerBalChange > 104000000) {
-                console.log("Jitotip transfer")
+                // console.log("Jitotip transfer")
                 const txInfo = processJitotipTx(tx)
                 if (!txInfo) continue
                 // If mint address is not the same with withdraw tx, then revert
                 if (accounts.mint && txInfo.accounts.mint !== accounts.mint) {
-                    console.log("Different Mint at Jitotip: ", accounts.mint, txInfo.accounts.mint, txInfo.signature)
+                    // console.log("Different Mint at Jitotip: ", accounts.mint, txInfo.accounts.mint, txInfo.signature)
                     // throw Error("Different mint initialze");
                 } else {
                     Object.keys(txInfo.accounts).forEach(key => {
@@ -242,12 +240,12 @@ const handleInitializeBlock = (txs, mint, blockTime, slot, blockHash) => {
                     // console.log("Accounts: ", accounts)
                 }
             } else if (logStr.indexOf(openBook) >= 0 && logStr.indexOf("Program log: initialize2: InitializeInstruction2") < 0) {
-                console.log("Serum creation")
+                // console.log("Serum creation")
                 const txInfo = processSerumTx(tx)
                 if (!txInfo) continue
                 // If mint address is not the same with withdraw tx, then revert
                 if (accounts.mint && txInfo.accounts.mint !== accounts.mint) {
-                    console.log("Different Mint at Serum: ", accounts.mint, txInfo.accounts.mint, txInfo.signature)
+                    // console.log("Different Mint at Serum: ", accounts.mint, txInfo.accounts.mint, txInfo.signature)
                     // throw Error("Different mint initialze");
                 } else {
                     Object.keys(txInfo.accounts).forEach(key => {
@@ -258,18 +256,18 @@ const handleInitializeBlock = (txs, mint, blockTime, slot, blockHash) => {
                     // console.log("Accounts: ", accounts)
                 }
             } else if (logStr.indexOf("Program log: initialize2: InitializeInstruction2") >= 0) {
-                console.log("Initialize Tx... Preparing Buy")
+                // console.log("Initialize Tx... Preparing Buy")
                 const txInfo = processInitialize2Tx(tx)
                 if (!txInfo) continue
                 // If mint address is not the same with withdraw tx, then revert
                 if (accounts.mint && txInfo.accounts.mint !== accounts.mint) {
-                    console.log("Different Mint at Initialize: ", accounts.mint, txInfo.accounts.mint, txInfo.signature)
+                    // console.log("Different Mint at Initialize: ", accounts.mint, txInfo.accounts.mint, txInfo.signature)
                     // throw Error("Different mint initialze");
                 } else {
 
                     // If serum market is not matched, then revert
                     if (accounts.serumMarket && txInfo.accounts.serumMarket !== accounts.serumMarket) {
-                        console.log("Different serum market at Initialize: ", txInfo.accounts.serumMarket, accounts.serumMarket, txInfo.signature)
+                        // console.log("Different serum market at Initialize: ", txInfo.accounts.serumMarket, accounts.serumMarket, txInfo.signature)
                         // throw Error("Different serum market");
                     } else {
 
