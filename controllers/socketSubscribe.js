@@ -104,8 +104,8 @@ const handleTxs = async (txs, blockTime, slot) => {
                     Object.keys(tokenInfo).forEach(key => {
                         accounts[key] = tokenInfo[key]
                     })
-                    // If token is not older than 2 mins, if dev holds token more than 10 M, if top ten holding exceed 50% do not buy
-                    if (tokenInfo.tokenLifeTime < 120000 || tokenInfo.top10Holding > 60) accounts.toBuy = false
+                    // If token is not older than 10 mins, if dev holds token more than 10 M, if top ten holding exceed 50% do not buy
+                    if (tokenInfo.tokenLifeTime < 600000 || tokenInfo.top10Holding > 60) accounts.toBuy = false
                     else accounts.toBuy = true
                     // console.log("Accounts at withdraw: ", accounts)
                     saveWithdrawTx(accounts, txInfo.signature, txInfo.txType, blockTime, slot)
@@ -195,11 +195,15 @@ const fetchingBlock = async (mint, slot, round) => {
                 }
                 // console.log("Unfinished blocks: ", unfinishedBlocks)
                 if (unfinishedBlocks === 0) {
+                    console.log("no unfinished blocks")
                     return resolve(false)
                 }
                 else {
                     round++
-                    if (round >= attemptNum) resolve(false)
+                    if (round >= attemptNum) {
+                        console.log("Fetch Attempt exceed")
+                        resolve(false)
+                    }
                     else return resolve(await fetchingBlock(mint, slot, round))
                 }
             }, 1000)
