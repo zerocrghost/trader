@@ -27,6 +27,21 @@ const getSnipingList = async (req, res) => {
     }
 }
 
+const getTotalCounts = async (req, res) => {
+    try {
+        let existingList = fs.readFileSync("./tx/snipingList.json", "utf-8")
+        existingList = JSON.parse(existingList)
+        let existingBoughtList = fs.readFileSync("./tx/boughtList.json", "utf-8")
+        existingBoughtList = JSON.parse(existingBoughtList)
+        const holdings = existingBoughtList.filter((l) => l.status !== "sold" && l.status !== "ignore")
+        const solds = existingBoughtList.filter((l) => l.status === "sold")
+        const ignored = existingBoughtList.filter((l) => l.status === "ignore")
+        return res.status(200).send({ data: { totalSniping: existingList.length, totalBoutght: existingBoughtList.length, totalHolding: holdings.length, totalSold: solds.length, totalIgnores: ignored.length } })
+    } catch (err) {
+        res.status(501).send("server error")
+    }
+}
+
 const getAllTradeHis = async (req, res) => {
     try {
         let existingBoughtList = fs.readFileSync("./tx/boughtList.json", "utf-8")
@@ -56,7 +71,23 @@ const getTradeHis = async (req, res) => {
         return res.status(200).send({ data: holdings })
 
     } catch (err) {
+        res.status(501).send("server error")
+    }
+}
 
+const ignoreMint = async (req, res) => {
+    try {
+        const { mint } = req.body
+        let existingBoughtList = fs.readFileSync("./tx/boughtList.json", "utf-8")
+        existingBoughtList = JSON.parse(existingBoughtList)
+        const buyIndex = existingBoughtList.map(e => e.mint).indexOf(mint)
+        if (buyIndex < 0) {
+            return res.status(404).send({ msg: "Mint not found" })
+        }
+        existingBoughtList[buyIndex].status = "ignore"
+        fs.writeFileSync("./tx/boughtList.json", JSON.stringify(existingBoughtList))
+    } catch (err) {
+        res.status(501).send("server error")
     }
 }
 
@@ -163,5 +194,7 @@ module.exports = {
     createAccount,
     manualUpdateBoughtHis,
     getSnipingList,
-    getAllTradeHis
+    getAllTradeHis,
+    ignoreMint,
+    getTotalCounts
 }
