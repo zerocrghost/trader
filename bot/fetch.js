@@ -2,7 +2,7 @@ const fs = require("fs")
 const { getTxDetail, getSignatureStatus } = require("./utils")
 const { solMintAddress, pubKey } = require("./constants")
 
-exports.fetchInterval = () => {
+const fetchInterval = () => {
     setInterval(async () => {
         const res = await fetch()
         console.log("Updated Num: ", res)
@@ -75,3 +75,5 @@ const fetch = async () => {
     }
     return fetchedNum
 }
+
+fetchInterval()
