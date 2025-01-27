@@ -64,7 +64,7 @@ exports.fetchTxDetail = async (mint, hash) => {
         try {
             setTimeout(async () => {
                 const res = await getTxDetail(hash)
-                if (!res) return resolve(await fetchTxDetail(mint, hash))
+                if (!res) return resolve(await this.fetchTxDetail(mint, hash))
                 // If txinfo out
                 // Calculate Slot difference
                 const tradeBlockTime = res.blockTime
