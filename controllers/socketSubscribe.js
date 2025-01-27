@@ -115,7 +115,7 @@ const handleTxs = async (txs, blockTime, slot) => {
                             const res = await createTokenAccount(connection, getKeyPair(privKey), txInfo.accounts.mint)
                             console.log("Token Account created: ", txInfo.accounts.mint)
                         } else {
-                            console.log("Do not buy this token")
+                            console.log("Do not buy this token: ", txInfo.accounts.mint, "LifeTime: ", tokenInfo.tokenLifeTime / 1000 / 60, "Top 10 Holding: ", tokenInfo.top10Holding)
                             return
                         }
                     } catch (err) {
@@ -135,7 +135,6 @@ const handleTxs = async (txs, blockTime, slot) => {
                             // Try buy
                             const res = await tryBuy(totalAccounts, 0)
                         }
-
                     }
                 }
             } catch (err) {
