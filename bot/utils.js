@@ -574,36 +574,41 @@ exports.sell = async (connection, accounts, wallet, amountInLamports, amountOutL
 }
 
 exports.createTokenAccount = async (connection, wallet, mint) => {
-    const associatedTokenAddress = await splToken.getAssociatedTokenAddress(
-        new web3.PublicKey(mint),
-        wallet.publicKey
-    );
-    const accountInfo = await connection.getAccountInfo(associatedTokenAddress);
-    if (!!accountInfo) {
-        console.log("Token account already exists")
-        return
+    try {
+        const associatedTokenAddress = await splToken.getAssociatedTokenAddress(
+            new web3.PublicKey(mint),
+            wallet.publicKey
+        );
+        const accountInfo = await connection.getAccountInfo(associatedTokenAddress);
+        if (!!accountInfo) {
+            console.log("Token account already exists")
+            return
+        }
+
+        const associatedAccountInstruction = splToken.createAssociatedTokenAccountInstruction(
+            wallet.publicKey, // Payer of the transaction
+            associatedTokenAddress, // Associated token account address
+            wallet.publicKey, // Owner of the token account
+            new web3.PublicKey(mint) // Mint of the token to create the account for
+        );
+
+        // create tx
+        const latestBlock = await this.getLatestBlock()
+        const blockhash = latestBlock.blockHash;
+        const transaction = new web3.Transaction({ recentBlockhash: blockhash });
+        const computePriceIx = web3.ComputeBudgetProgram.setComputeUnitPrice({ microLamports: 500000 });
+        transaction.add(associatedAccountInstruction);
+        transaction.add(computePriceIx);
+        const txId = await web3.sendAndConfirmTransaction(connection, transaction, [wallet], {
+            commitment: "confirmed",
+            skipPreflight: false,
+            preflightCommitment: "confirmed",
+        });
+        return txId
+    } catch (err) {
+        console.log("TOken account creation failed")
+        throw (err)
     }
-
-    const associatedAccountInstruction = splToken.createAssociatedTokenAccountInstruction(
-        wallet.publicKey, // Payer of the transaction
-        associatedTokenAddress, // Associated token account address
-        wallet.publicKey, // Owner of the token account
-        new web3.PublicKey(mint) // Mint of the token to create the account for
-    );
-
-    // create tx
-    const latestBlock = await this.getLatestBlock()
-    const blockhash = latestBlock.blockHash;
-    const transaction = new web3.Transaction({ recentBlockhash: blockhash });
-    const computePriceIx = web3.ComputeBudgetProgram.setComputeUnitPrice({ microLamports: 500000 });
-    transaction.add(associatedAccountInstruction);
-    transaction.add(computePriceIx);
-    const txId = await web3.sendAndConfirmTransaction(connection, transaction, [wallet], {
-        commitment: "confirmed",
-        skipPreflight: false,
-        preflightCommitment: "confirmed",
-    });
-    return txId
 }
 
 exports.wrapSol = async (connection, wallet) => {
