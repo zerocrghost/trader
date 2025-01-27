@@ -56,7 +56,7 @@ const getBoughtList = async (req, res) => {
     try {
         let existingBoughtList = fs.readFileSync("./tx/boughtList.json", "utf-8")
         existingBoughtList = JSON.parse(existingBoughtList)
-        const holdings = existingBoughtList.filter((l) => l.status !== "sold")
+        const holdings = existingBoughtList.filter((l) => l.status !== "sold" && l.status !== "ignore")
         return res.status(200).send({ data: holdings })
     } catch (err) {
         res.status(501).send("server error")
