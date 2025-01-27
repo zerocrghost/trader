@@ -5,7 +5,8 @@ const { solMintAddress, pubKey } = require("./constants")
 const fetchInterval = () => {
     setInterval(async () => {
         const res = await fetch()
-        console.log("Updated Num: ", res)
+        if (res > 0)
+            console.log("Updated Num: ", res)
     }, 2000)
 }
 

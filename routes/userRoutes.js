@@ -9,6 +9,6 @@ router.get("/getTradeList", getTradeHis);
 router.get("/startSubscribe", startSubscribe)
 router.get("/stopSubscribe", stopSubscribe)
 router.get("/statusSubscribe", getSubscribeStatus)
-router.post("/sell/:address", sell)
+router.post("/sell", sell)
 
 module.exports = router;
