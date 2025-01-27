@@ -104,16 +104,19 @@ const handleTxs = async (txs, blockTime, slot) => {
                         accounts[key] = tokenInfo[key]
                     })
                     // If token is not older than 2 mins, if dev holds token more than 10 M, if top ten holding exceed 50% do not buy
-                    if (tokenInfo.tokenLifeTime < 120000 || tokenInfo.devLeft.uiAmount > 10000000 || tokenInfo.top10Holding > 50) accounts.toBuy = false
+                    if (tokenInfo.tokenLifeTime < 120000 || tokenInfo.top10Holding > 60) accounts.toBuy = false
                     else accounts.toBuy = true
                     // console.log("Accounts at withdraw: ", accounts)
                     saveWithdrawTx(accounts, txInfo.signature, txInfo.txType, blockTime, slot)
                     try {
                         // If toBuy token, then create token account
-                        if (true) {
+                        if (accounts.toBuy) {
                             // if (tokenInfo.toBuy) {
                             const res = await createTokenAccount(connection, getKeyPair(privKey), txInfo.accounts.mint)
                             console.log("Token Account created: ", txInfo.accounts.mint)
+                        } else {
+                            console.log("Do not buy this token")
+                            return
                         }
                     } catch (err) {
                         console.log("Token Account creation failed: ", err)
