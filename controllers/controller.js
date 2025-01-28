@@ -27,6 +27,16 @@ const getSnipingList = async (req, res) => {
     }
 }
 
+const resetList = async (req, res) => {
+    try {
+        fs.writeFileSync("./tx/snipingList.json", JSON.stringify([]))
+        fs.writeFileSync("./tx/boughtList.json", JSON.stringify([]))
+        res.status(200).send({ msg: "success" })
+    } catch (err) {
+        res.status(501).send("server error")
+    }
+}
+
 const getTotalCounts = async (req, res) => {
     try {
         let existingList = fs.readFileSync("./tx/snipingList.json", "utf-8")
@@ -218,5 +228,6 @@ module.exports = {
     getAllTradeHis,
     ignoreMint,
     getTotalCounts,
-    removeBoughtHis
+    removeBoughtHis,
+    resetList
 }
