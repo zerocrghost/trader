@@ -168,6 +168,7 @@ exports.getTokenCreatorInfo = async (address) => {
         // Get token life time
         if (!result[0]?.blockTime) {
             console.log("TX Detail fetch failed: No Blocktime caught", address)
+            console.log("Result: ", result[0])
             return false
         }
         const tokenLifeTime = new Date() - result[0].blockTime * 1000
