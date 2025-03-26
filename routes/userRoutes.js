@@ -1,6 +1,9 @@
 const express = require("express");
-const { startSubscribe, stopSubscribe, getSubscribeStatus } = require("../controllers/socketSubscribe");
-const { getBoughtList, sell, getTradeHis, getSnipingAccount, manualUpdateSellHis, createAccount, manualUpdateBoughtHis, getAllTradeHis, getSnipingList, getTotalCounts, ignoreMint, removeBoughtHis, resetList } = require("../controllers/controller");
+const { startSubscribe, stopSubscribe, getSubscribeStatus } = require("../controllers/socketRaydiumSubscribe");
+const { getBoughtList, sell, getTradeHis, getSnipingAccount, manualUpdateSellHis, createAccount, manualUpdateBoughtHis, getAllTradeHis, getSnipingList, getTotalCounts, ignoreMint, removeBoughtHis, resetList } = require("../controllers/raydiumController");
+const { startPumpSubscribe, getPumpSubscribeStatus, stopPumpSubscribe } = require("../controllers/socketPumpSubscribe");
+const { getCreateHisByMint, getTradeHisByMint, getBondingCurveProgress } = require("../controllers/pumpfunController");
+const { getSocialCreators, getSocialPosts } = require("../controllers/socialController");
 const router = express.Router();
 
 /**
@@ -14,11 +17,27 @@ router.get("/getTotalCounts", getTotalCounts)
 router.post("/getSnipingAccount", getSnipingAccount);
 
 /**
- * Subscribe
+ * Raydium
  */
-router.get("/startSubscribe", startSubscribe)
-router.get("/stopSubscribe", stopSubscribe)
-router.get("/statusSubscribe", getSubscribeStatus)
+router.get("/raydium/start", startSubscribe)
+router.get("/raydium/stop", stopSubscribe)
+router.get("/raydium/status", getPumpSubscribeStatus)
+router.get("/raydium/create/:mint", getCreateHisByMint)
+router.get("/raydium/trade/:mint", getTradeHisByMint)
+router.get("/raydium/progress/:mint", getBondingCurveProgress)
+
+/**
+ * Social
+ */
+router.get("/social/creators/:topic", getSocialCreators)
+router.get("/social/posts/:topic", getSocialPosts)
+
+/**
+ * Pump fun
+ */
+router.get("/pumpfun/start", startPumpSubscribe)
+router.get("/pumpfun/stop", stopPumpSubscribe)
+router.get("/pumpfun/status", getSubscribeStatus)
 
 /**
  * Web3 actions

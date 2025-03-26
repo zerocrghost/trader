@@ -1,6 +1,6 @@
 const fs = require("fs")
-const { getTokenAccountsByOwner, sell, getTxDetail, getKeyPair } = require("./utils")
-const { pubKey, connection, solMintAddress, privKey } = require("./constants")
+const { getTokenAccountsByOwner, sell, getTxDetail, getKeyPair } = require("../utils/utils")
+const { pubKey, connection, solMintAddress, privKey } = require("../config/constants")
 
 exports.sellMint = async (mint) => {
     if (!mint) {

@@ -1,7 +1,7 @@
 const fs = require("fs")
 const { sellMint, fetchTxDetail } = require("../bot/sell")
-const { connection, privKey } = require("../bot/constants")
-const { createTokenAccount, getKeyPair } = require("../bot/utils")
+const { connection, privKey } = require("../config/constants")
+const { createTokenAccount, getKeyPair } = require("../utils/utils")
 
 const getSnipingAccount = async (req, res) => {
     try {

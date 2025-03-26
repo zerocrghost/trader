@@ -1,6 +1,6 @@
 const fs = require("fs")
-const { getTxDetail, getSignatureStatus } = require("./utils")
-const { solMintAddress, pubKey } = require("./constants")
+const { getTxDetail } = require("../utils/utils.js")
+const { solMintAddress, pubKey } = require("../config/constants")
 
 const fetchInterval = () => {
     setInterval(async () => {

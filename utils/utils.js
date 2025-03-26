@@ -6,9 +6,9 @@ const web3 = require('@solana/web3.js');
 const { AnchorProvider, BN } = require("@coral-xyz/anchor");
 const splToken = require("@solana/spl-token");
 const bs58 = require('bs58')
-const { raydiumAmmProgram } = require("../raydiumAmmProgram/program.js");
-const { CustomWallet } = require("./wallet.js");
-const { solMintAddress, raydiumAuthorityV4, openBook, http } = require("./constants.js");
+const { raydiumAmmProgram } = require("../raydium/program.js");
+const { CustomWallet } = require("../raydium/wallet.js");
+const { solMintAddress, raydiumAuthorityV4, openBook, http } = require("../config/constants.js");
 
 const totalSupply = 1000000000
 

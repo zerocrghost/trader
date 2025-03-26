@@ -1,5 +1,5 @@
 const fs = require("fs")
-const { connection, privKey } = require("../bot/constants")
+const { connection, privKey } = require("../config/constants")
 const { getKeyPair, transferSoltoWrapSolAccount } = require("../bot/utils")
 
 const wrapSol = async (req, res) => {
