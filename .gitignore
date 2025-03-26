@@ -5,3 +5,4 @@ bot/constants.js
 
 tx/boughtList.json
 tx/snipingList.json
+config/constants.js
