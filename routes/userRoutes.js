@@ -21,7 +21,7 @@ router.post("/getSnipingAccount", getSnipingAccount);
  */
 router.get("/raydium/start", startSubscribe)
 router.get("/raydium/stop", stopSubscribe)
-router.get("/raydium/status", getPumpSubscribeStatus)
+router.get("/raydium/status", getSubscribeStatus)
 router.get("/raydium/create/:mint", getCreateHisByMint)
 router.get("/raydium/trade/:mint", getTradeHisByMint)
 router.get("/raydium/progress/:mint", getBondingCurveProgress)
@@ -37,7 +37,7 @@ router.get("/social/posts/:topic", getSocialPosts)
  */
 router.get("/pumpfun/start", startPumpSubscribe)
 router.get("/pumpfun/stop", stopPumpSubscribe)
-router.get("/pumpfun/status", getSubscribeStatus)
+router.get("/pumpfun/status", getPumpSubscribeStatus)
 
 /**
  * Web3 actions

@@ -3,12 +3,14 @@ const httpRPC = "https://intensive-wild-scion.solana-mainnet.quiknode.pro/f6e716
 const solscanAPI = "https://api-v2.solscan.io/v2"
 const pumpfunRaydiumMigration = "39azUYFWPz3VHgKCf3VChUwbpURdCHRxjWVowf5jUJjg"
 const web3 = require('@solana/web3.js');
+const { PublicKey } = require("@solana/web3.js");
 const { AnchorProvider, BN } = require("@coral-xyz/anchor");
 const splToken = require("@solana/spl-token");
 const bs58 = require('bs58')
 const { raydiumAmmProgram } = require("../raydium/program.js");
 const { CustomWallet } = require("../raydium/wallet.js");
-const { solMintAddress, raydiumAuthorityV4, openBook, http } = require("../config/constants.js");
+const { solMintAddress, raydiumAuthorityV4, openBook } = require("../config/constants.js");
+const { ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID } = require("@solana/spl-token");
 
 const totalSupply = 1000000000
 
@@ -690,4 +692,23 @@ exports.transferSoltoWrapSolAccount = async (connection, wallet, amount) => {
         preflightCommitment: "confirmed",
     });
     return txId
+}
+
+exports.getBondingCurveAddress = (mint) => {
+    const PUMP_FUN_PROGRAM = new PublicKey("6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P")
+    const [bondingCurve] = PublicKey.findProgramAddressSync(
+        [
+            Buffer.from("bonding-curve"),
+            new PublicKey(mint).toBuffer()
+        ],
+        PUMP_FUN_PROGRAM);
+
+    const [associatedBondingCurve] = PublicKey.findProgramAddressSync(
+        [
+            bondingCurve.toBuffer(),
+            TOKEN_PROGRAM_ID.toBuffer(),
+            new PublicKey(mint).toBuffer(),
+        ],
+        ASSOCIATED_TOKEN_PROGRAM_ID);
+    return { bondingCurve: bondingCurve.toString(), associatedBondingCurve: associatedBondingCurve.toString() }
 }

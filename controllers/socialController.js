@@ -1,5 +1,5 @@
 const axios = require("axios");
-const { socialAPI, socialToken } = require("../config/constants");
+const { socialAPI } = require("../config/constants");
 
 const getSocialCreators = async (req, res) => {
     try {
@@ -9,7 +9,7 @@ const getSocialCreators = async (req, res) => {
             method: "get",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${socialToken}`
+                "Authorization": `Bearer ${process.env.LUNAR_TOKEN}`
             },
 
         });
@@ -28,7 +28,7 @@ const getSocialPosts = async (req, res) => {
             method: "get",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${socialToken}`
+                "Authorization": `Bearer ${process.env.LUNAR_TOKEN}`
             },
 
         });

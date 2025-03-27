@@ -1,8 +1,7 @@
 const { Raydium } = require("@raydium-io/raydium-sdk-v2");
 const { connection } = require("../config/constants");
-const { privKey } = require("../config/constants");
 const { getKeyPair } = require("../utils/utils");
-const owner = getKeyPair(privKey)
+const owner = getKeyPair(process.env.PRIVATE_KEY)
 const cluster = "mainnet"; // 'mainnet' | 'devnet'
 
 let raydium;

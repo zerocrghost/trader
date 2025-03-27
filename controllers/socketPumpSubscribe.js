@@ -1,56 +1,67 @@
+const { initialTokens } = require("../config/constants");
 const pumpFunMintModel = require("../model/pumpFunMint.model");
 const pumpFunTradeModel = require("../model/pumpFunTrade.model");
+const { getBondingCurveAddress } = require("../utils/utils");
 
 const W3CWebSocket = require("websocket").w3cwebsocket;
 
-let lastAsked = new Date()
+let client
+// let lastAsked = new Date()
 
 const startPumpSubscribe = async (req, res) => {
   try {
+    // lastAsked = new Date()
     startWebsocket()
-    return res.status(200).send({ msg: "Started Web Socket" })
+    return res.status(200).send({ msg: "Started Pumpfun Web Socket" })
   } catch (err) {
-    return res.status(501).send({ msg: "Error starting web socket" })
+    return res.status(501).send({ msg: "Error starting Pumpfun web socket" })
   }
 }
 
 const stopPumpSubscribe = async (req, res) => {
-  client.close()
-  client
-  return res.status(200).send({ msg: "Stop web socket" })
+  try {
+    client.close()
+    return res.status(200).send({ msg: "Stop web socket" })
+  } catch (err) {
+    return res.status(501).send({ msg: "Error stopping Pumpfun web socket" })
+
+  }
 }
 
 const getPumpSubscribeStatus = async (req, res) => {
-  lastAsked = new Date()
-  if (!client) return res.status(200).send({ msg: "Not started Socket yet" })
-  else return res.status(200).send({ msg: client.readyState })
+  try {
+    // lastAsked = new Date()
+    if (!client) return res.status(200).send({ msg: "Not started Socket yet" })
+    else return res.status(200).send({ msg: client.readyState })
+  } catch (err) {
+    return res.status(501).send({ msg: "Error getting status for Pumpfun web socket" })
+  }
 }
 
 const startWebsocket = () => {
-  // Initialize Subscribe socket, and accounts 
-  client = new W3CWebSocket(wss)
-  accounts = {}
+  try {
+    // Initialize Subscribe socket, and accounts 
+    client = new W3CWebSocket(process.env.NODE_WSS)
+    accounts = {}
 
-  client.onerror = () => {
-    console.log("Connection Error")
-  }
+    client.onerror = () => {
+      console.log("Connection Error")
+    }
 
-  client.onclose = () => {
-    console.log("Client closed")
-    // console.log("Client closed, Creating new client in one second")
-    // setTimeout(() => {
-    //     startWebsocket()
-    // }, 1000)
-  }
+    client.onclose = () => {
+      console.log("Client closed")
+      // console.log("Client closed, Creating new client in one second")
+      // setTimeout(() => {
+      //     startWebsocket()
+      // }, 1000)
+    }
 
-  client.onopen = () => {
-    console.log("WebSocket client connected")
-    getBlockSubscribe()
-  }
+    client.onopen = () => {
+      console.log("WebSocket client connected")
+      getBlockSubscribe()
+    }
 
-  client.onmessage = (e) => {
-    // if lastAsked is bigger than 20 Sec, close client
-    if (new Date() - lastAsked < 20000)
+    client.onmessage = (e) => {
       try {
         if (typeof e.data === 'string') {
           // Catch blockNotification
@@ -74,7 +85,9 @@ const startWebsocket = () => {
       } catch (err) {
         throw (err)
       }
-    else console.log("Waiting for reconnecting from end user")
+    }
+  } catch (err) {
+    console.log("Pumpfun socket start error: ", err)
   }
 }
 
@@ -162,7 +175,7 @@ const handleTxs = async (txs, blockTime, slot) => {
 const calcProgress = (leftTokens) => {
   const initialRealTokenReserves = 793100000
   const progress = 100 - (((leftTokens - 206900000) * 100) / initialRealTokenReserves)
-  return progress.toString()
+  return progress.toFixed(2).toString()
 }
 
 const saveMint = async (mint, signer, createSig, blockTime, slot) => {

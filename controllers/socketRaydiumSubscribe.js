@@ -1,7 +1,7 @@
 const fs = require("fs")
 const W3CWebSocket = require("websocket").w3cwebsocket;
 const { processInitialize2Tx, getTokenCreatorInfo, processWithdrawTx, processJitotipTx, processSerumTx, getBlock, getKeyPair, buy, createTokenAccount } = require("../utils/utils.js");
-const { wss, openBook, connection, privKey, amountBuy, amountOutExpect } = require("../config/constants.js");
+const { openBook, connection, privKey, amountBuy, amountOutExpect } = require("../config/constants.js");
 
 const attemptNum = 100
 const buyAttempNum = 10
@@ -21,7 +21,7 @@ const startSubscribe = async (req, res) => {
 
 const startWebsocket = () => {
   // Initialize Subscribe socket, and accounts 
-  client = new W3CWebSocket(wss)
+  client = new W3CWebSocket(process.env.NODE_WSS)
   accounts = {}
 
 
@@ -74,7 +74,6 @@ const startWebsocket = () => {
 
 const stopSubscribe = async (req, res) => {
   client.close()
-  client
   return res.status(200).send({ msg: "Stop web socket" })
 }
 
