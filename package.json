@@ -5,7 +5,7 @@
     "@native-to-anchor/buffer-layout": "^0.1.0",
     "@raydium-io/raydium-sdk-v2": "^0.1.106-alpha",
     "@solana/buffer-layout-utils": "^0.2.0",
-    "@solana/spl-token": "0.4.8",
+    "@solana/spl-token": "^0.4.8",
     "@solana/web3.js": "^1.98.0",
     "axios": "^1.7.8",
     "cors": "^2.8.5",
@@ -21,6 +21,8 @@
   },
   "scripts": {
     "start": "node server.js",
-    "server": "nodemon server.js"
+    "server": "nodemon server.js",
+    "socket": "nodemon socketServer.js",
+    "pumpswap": "nodemon pumpswapServer.js"
   }
 }

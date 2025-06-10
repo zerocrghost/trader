@@ -1,17 +1,26 @@
-const { initialTokens } = require("../config/constants");
+const { default: axios } = require("axios");
+const { initialTokens, mintThres, runThres, pumpfunVolumeThres, pumpfunProgressThres, maxSolAmount } = require("../config/constants");
 const pumpFunMintModel = require("../model/pumpFunMint.model");
 const pumpFunTradeModel = require("../model/pumpFunTrade.model");
-const { getBondingCurveAddress } = require("../utils/utils");
+const { getBondingCurveAddress, getLeftTokensAndProgress, calcProgress } = require("../utils/utils");
 
 const W3CWebSocket = require("websocket").w3cwebsocket;
 
+const kols = require("../config/kol.json");
+const purchaseModel = require("../model/purchase.model");
+const myWalletModel = require("../model/myWallet.model");
+
+let newMints = []
+
 let client
+let myWallets
 // let lastAsked = new Date()
 
 const startPumpSubscribe = async (req, res) => {
   try {
     // lastAsked = new Date()
     startWebsocket()
+    myWallets = await myWalletModel.find({})
     return res.status(200).send({ msg: "Started Pumpfun Web Socket" })
   } catch (err) {
     return res.status(501).send({ msg: "Error starting Pumpfun web socket" })
@@ -48,12 +57,17 @@ const startWebsocket = () => {
       console.log("Connection Error")
     }
 
-    client.onclose = () => {
+    client.onclose = (msg) => {
+      console.log("Close MSG: ", msg.reason)
       console.log("Client closed")
-      // console.log("Client closed, Creating new client in one second")
-      // setTimeout(() => {
-      //     startWebsocket()
-      // }, 1000)
+      if (msg.reason !== "Normal connection closure") {
+
+        console.log("Client closed unexpectedly, Creating new client in one second")
+        setTimeout(() => {
+          startWebsocket()
+        }, 1000)
+
+      }
     }
 
     client.onopen = () => {
@@ -117,7 +131,7 @@ const handleTxs = async (txs, blockTime, slot) => {
   try {
     await txs.forEach(async tx => {
       try {
-        const logStr = tx?.meta?.logMessages.toString()
+        const logStr = tx?.meta?.logMessages?.toString()
         if (logStr.indexOf("Program log: Instruction: InitializeMint2") >= 0 && logStr.indexOf("Program 6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P failed") < 0) {
           const createSig = tx.transaction.signatures[0]
           let accountKeys = tx.transaction.message.accountKeys
@@ -128,7 +142,9 @@ const handleTxs = async (txs, blockTime, slot) => {
             return
           }
           const mint = mints[0]
+          updateNewMints(mint, signer)
           const { bondingCurve, associatedBondingCurve } = getBondingCurveAddress(mint)
+          const bondingCurveIndex = accountKeys.indexOf(bondingCurve) + 1
           let leftTokens = initialTokens;
           let progress = 0
           let tradeAmt = 0
@@ -141,8 +157,9 @@ const handleTxs = async (txs, blockTime, slot) => {
             if (index >= 0 && postTokenBalances[index].mint === mint) {
               leftTokens = postTokenBalances[index].uiTokenAmount.uiAmount
               tradeAmt = (Number(initialTokens) - Number(leftTokens)).toString()
+              const solAmt = (Number(tx.meta.preBalances[bondingCurveIndex]) - Number(tx.meta.postBalances[bondingCurveIndex]) / 1e9).toString()
               progress = calcProgress(leftTokens)
-              saveTrade(mint, signer, tradeAmt, blockTime, slot, progress)
+              saveTrade(mint, signer, createSig, tradeAmt, solAmt, blockTime, slot, progress)
             }
           }
         } else if ((logStr.indexOf("Program log: Instruction: Sell") >= 0 || logStr.indexOf("Program log: Instruction: Buy") >= 0) && logStr.indexOf("Program 6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P failed") < 0) {
@@ -153,6 +170,7 @@ const handleTxs = async (txs, blockTime, slot) => {
           if (mintIndex < 0) return
           const mint = accountKeys[mintIndex]
           const { bondingCurve, associatedBondingCurve } = getBondingCurveAddress(mint)
+          const bondingCurveIndex = accountKeys.indexOf(bondingCurve) + 1
           const postTokenBalances = tx.meta.postTokenBalances
           const preTokenBalances = tx.meta.preTokenBalances
 
@@ -160,8 +178,9 @@ const handleTxs = async (txs, blockTime, slot) => {
           if (!bondingRes) return
           const { leftTokens, progress, tradeAmt } = bondingRes
           if (!tradeAmt) return
+          const solAmt = ((Number(tx.meta.preBalances[bondingCurveIndex]) - Number(tx.meta.postBalances[bondingCurveIndex])) / 1e9).toString()
 
-          saveTrade(mint, signer, tradeAmt, blockTime, slot, progress)
+          saveTrade(mint, signer, signature, tradeAmt, solAmt, blockTime, slot, progress)
         }
       } catch (err) {
         throw (err)
@@ -172,11 +191,6 @@ const handleTxs = async (txs, blockTime, slot) => {
   }
 }
 
-const calcProgress = (leftTokens) => {
-  const initialRealTokenReserves = 793100000
-  const progress = 100 - (((leftTokens - 206900000) * 100) / initialRealTokenReserves)
-  return progress.toFixed(2).toString()
-}
 
 const saveMint = async (mint, signer, createSig, blockTime, slot) => {
   try {
@@ -184,41 +198,142 @@ const saveMint = async (mint, signer, createSig, blockTime, slot) => {
       mint, signer, createSig, blockTime, slot
     })
     await newMint.save()
-    console.log("New Token: ", mint)
+    console.log("New Mint: ", mint)
+
+    /**
+     * if creator is me, then act
+     */
+    if (myWallets.map(w => w.publicKey).indexOf(signer) >= 0) {
+      // Create TokenAccount
+      const buyTxs = await Promise.all(myWallets.map(w => {
+        if (w.publicKey != signer) return buy(mint, w.publicKey)
+      })).then()
+      console.log("BUY Txs: ", buyTxs)
+    }
   } catch (err) {
     console.log("Mint Saving Error: ", err)
   }
 }
 
-const saveTrade = async (mint, signer, amount, blockTime, slot, progress) => {
+const saveTrade = async (mint, signer, tx, mintAmount, solAmount, blockTime, slot, progress) => {
   try {
+    // Save Trade history
     const newTrade = new pumpFunTradeModel({
-      mint, signer, amount, blockTime, slot, progress
+      mint, signer, tx, mintAmount, solAmount, blockTime, slot, progress
     })
     await newTrade.save()
-    console.log(`New Trade: ${mint}, ${progress}%`)
+    // if (Number(progress) > 90)
+    //   await fetchSocial(mint, progress)
+
+    /**
+     * Check if the signer is registered KOL
+     */
+    // let kolHis
+    // if (kols.indexOf(signer) >= 0) {
+    // console.log("New KOL Trade: ", signer)
+    // kolHis = await getKolHistory(mint)
+    // console.log("KOL HIS: ", kolHis)
+    // }
+
+    /**
+     * Check new token trades
+     */
+    const mintIndex = newMints.map(m => m.mint).indexOf(mint)
+    if (mintIndex >= 0) {
+      newMints[mintIndex].volume += Math.abs(solAmount)
+      newMints[mintIndex].progress = progress
+
+      // If creator tx, then updates his amt
+      if (signer === newMints[mintIndex].creator) {
+        newMints[mintIndex].creatorSolAmt += Number(solAmount)
+        newMints[mintIndex].creatorMintAmt += Number(mintAmount)
+        if (newMints[mintIndex].creatorMintAmt < runThres) {
+          newMints[mintIndex].creatorStatus = "run"
+        } else if (newMints[mintIndex].creatorMintAmt > 0) {
+          newMints[mintIndex].creatorStatus = "buy"
+        }
+      }
+
+      if (newMints[mintIndex].creatorStatus === "run" && newMints[mintIndex].volume > pumpfunVolumeThres && newMints[mintIndex].progress > pumpfunProgressThres && !newMints[mintIndex].bought) {
+        newMints[mintIndex].bought = true
+        const newPurchase = new purchaseModel({
+          mint: newMints[mintIndex].mint,
+          creator: newMints[mintIndex].creator,
+          creatorSolAmt: newMints[mintIndex].creatorSolAmt,
+          creatorStatus: newMints[mintIndex].creatorStatus,
+          createdAt: newMints[mintIndex].createdAt,
+          volume: newMints[mintIndex].volume,
+          progress: newMints[mintIndex].progress,
+          oldAt: ((new Date() - newMints[mintIndex].createdAt) / 1000 / 60).toFixed(1)
+        })
+
+        await newPurchase.save()
+      }
+    }
+    // console.log(`New Trade: ${mint}, Mint: ${mintAmount}, Sol: ${solAmount}, Progress: ${progress}`)
   } catch (err) {
     console.log("Trade saving error: ", err)
   }
 }
 
-const getLeftTokensAndProgress = (signature, preTokenBalances, postTokenBalances, mint, bondingCurve) => {
-  const bondingPreBals = preTokenBalances.filter(p => p.mint === mint && p.owner === bondingCurve)
-  if (bondingPreBals.length > 1) {
-    console.log("Mint address mismatch for trade: ", signature, postTokenBalances, bondingPreBals, mint)
-    return false
+const getKolHistory = async (mint) => {
+  try {
+    const res = await axios({
+      url: `${process.env.SERVICE_URL}/api/pumpfun/kol/${mint}`,
+      method: "get",
+    })
+    return res.data
+  } catch (err) {
+    console.log("Fetch Social error: ", err.response.data)
   }
-  const bondingPostBals = postTokenBalances.filter(p => p.mint === mint && p.owner === bondingCurve)
-  if (bondingPostBals.length > 1) {
-    console.log("Mint address mismatch for trade: ", signature, postTokenBalances, bondingPostBals, mint)
-    return false
-  }
-
-  const leftTokens = Number(bondingPostBals[0]?.uiTokenAmount?.uiAmount)
-  const tradeAmt = (Number(bondingPreBals[0]?.uiTokenAmount?.uiAmount) - leftTokens).toString()
-  const progress = calcProgress(leftTokens)
-  return { leftTokens, progress, tradeAmt }
 }
+
+const buy = async (mint, publicKey) => {
+  try {
+    const amount = Math.floor(5 * Math.random() + 10) * 1000000 * 1000000
+
+    const res = await axios({
+      url: `${process.env.SERVICE_URL}/api/pumpfun/buyWithFreshWallet`,
+      method: "post",
+      data: { mint, publicKey, amount, solAmt: maxSolAmount }
+    })
+    return res.data.data
+  } catch (err) {
+    console.log("Buy error: ", err.response.data)
+  }
+}
+
+const fetchSocial = async (mint, progressWithDecimal) => {
+  try {
+    let progress = 10 * Math.floor(progressWithDecimal / 10)
+    const res = await axios({
+      url: `${process.env.SERVICE_URL}/api/social/lunar`,
+      method: "Post",
+      data: {
+        mint, progress
+      }
+    })
+    return res
+  } catch (err) {
+    console.log("Fetch Social error: ", err.response.data)
+  }
+}
+
+const updateNewMints = (mint, creator) => {
+  // Remove old mint from the list
+  newMints.forEach((m, index) => {
+    if (new Date() - m.createdAt > mintThres) {
+      // console.log("Remove ", mint, new Date() - m.createdAt)
+      newMints.splice(index, 1)
+    }
+  })
+
+  newMints.push({
+    mint, creator, creatorMintAmt: 0, creatorSolAmt: 0, creatorStatus: "", createdAt: new Date(), volume: 0, progress: 0
+  })
+  // console.log("New Mints: ", newMints)
+}
+
 
 module.exports = {
   startPumpSubscribe, stopPumpSubscribe, getPumpSubscribeStatus

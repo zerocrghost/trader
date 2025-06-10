@@ -1,10 +1,9 @@
 const express = require("express");
 require("dotenv").config();
-const userRoutes = require("./routes/routes.js");
+const socketRoutes = require("./routes/socketRoutes.js");
 const { initSdk } = require("./raydium/raydiumInit.js");
 // const { fetchInterval } = require("./bot/fetch.js");
 const connectDB = require("./config/db.js");
-const cors = require("cors");
 
 initSdk(); // to save init time, it takes about 4s at first.
 
@@ -12,11 +11,10 @@ connectDB()
 
 const app = express();
 app.use(express.json());
-app.use(cors())
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5000;
 
-app.use("/api", userRoutes);
+app.use("/socket", socketRoutes);
 
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+    console.log(`Socket Server is running on port ${PORT}`);
 });

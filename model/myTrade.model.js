@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const pumpFunTradeSchema = new mongoose.Schema({
+const myTradeSchema = new mongoose.Schema({
   mint: {
     type: String,
     required: true
@@ -20,19 +20,7 @@ const pumpFunTradeSchema = new mongoose.Schema({
   mintAmount: {
     type: String,
     required: true
-  },
-  blockTime: {
-    type: String,
-    required: true
-  },
-  slot: {
-    type: String,
-    required: true
-  },
-  progress: {
-    type: String,
-    required: true
-  },
+  }
 })
 
-module.exports = mongoose.model("PumpFunTradeSchema", pumpFunTradeSchema);
+module.exports = mongoose.model("MyTradeSchema", myTradeSchema);

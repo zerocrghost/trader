@@ -87,7 +87,7 @@ const handleTxs = async (txs, blockTime, slot) => {
   try {
     await txs.forEach(async tx => {
       try {
-        const logStr = tx?.meta?.logMessages.toString()
+        const logStr = tx?.meta?.logMessages?.toString()
         if (logStr.indexOf("Program log: Instruction: Withdraw") >= 0) {
           // Remove liquidity from Pump Fun
           console.log("\nRemove liquidity from Pump Fun, starting to get accounts information")
@@ -230,7 +230,7 @@ const handleInitializeBlock = (txs, mint, blockTime, slot, blockHash) => {
   for (let i = 0; i < txs.length; i++) {
     const tx = txs[i]
     try {
-      const logStr = tx?.meta?.logMessages.toString()
+      const logStr = tx?.meta?.logMessages?.toString()
       const jitotipBalChange = tx?.meta?.postBalances[1] - tx?.meta?.preBalances[1]
       const signerBalChange = tx?.meta?.preBalances[0] - tx?.meta?.postBalances[0]
       if (jitotipBalChange === 100000000 && signerBalChange > 104000000) {
